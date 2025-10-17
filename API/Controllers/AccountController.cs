@@ -18,7 +18,7 @@ public class AccountController(AppDbContext context) : BaseApiController
         {
             return BadRequest("Email is already in use");
         }
-        
+
         using var hmac = new HMACSHA512();
 
         var user = new AppUser
@@ -31,6 +31,26 @@ public class AccountController(AppDbContext context) : BaseApiController
 
         context.Users.Add(user);
         await context.SaveChangesAsync();
+        return user;
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult<AppUser>> Login(LoginDto loginDto)
+    {
+        var user = await context.Users.SingleOrDefaultAsync(x => x.Email == loginDto.Email);
+        if (user == null)
+        {
+            return Unauthorized("Invalid email");
+        }
+
+        using var hmac = new HMACSHA512(user.PasswordSalt);
+        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
+        
+        for (int i = 0; i < computedHash.Length; i++)
+        {
+            if (computedHash[i] != user.PasswordHash[i]) return Unauthorized("Invalid password");
+        }
+
         return user;
     }
 
