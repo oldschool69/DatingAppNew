@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AccountService } from '../../core/services/account-service';
 import { firstValueFrom } from 'rxjs';
@@ -13,14 +13,21 @@ export class Nav {
 
   private accountService = inject(AccountService);
   protected creds: any = {};
+  protected loggedIn = signal(false);
 
   async login(){
     try {
       const result = await firstValueFrom(this.accountService.login(this.creds));
       console.log(result);
+      this.loggedIn.set(true);
+      this.creds = {};
     } catch (error: any) {
       alert(error.message);
     }
+  }
+
+  logout(){
+    this.loggedIn.set(false);
   }
 
 }
