@@ -11,15 +11,13 @@ import { firstValueFrom } from 'rxjs';
 })
 export class Nav {
 
-  private accountService = inject(AccountService);
+  protected accountService = inject(AccountService);
   protected creds: any = {};
-  protected loggedIn = signal(false);
 
   async login(){
     try {
       const result = await firstValueFrom(this.accountService.login(this.creds));
       console.log(result);
-      this.loggedIn.set(true);
       this.creds = {};
     } catch (error: any) {
       alert(error.message);
@@ -27,7 +25,7 @@ export class Nav {
   }
 
   logout(){
-    this.loggedIn.set(false);
+    this.accountService.logout();
   }
 
 }
