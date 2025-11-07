@@ -5,3 +5,13 @@
   <button (click)="get401Error()" class="btn btn-success">Test 401 Error</button>
   <button (click)="get400ValidationError()" class="btn btn-info">Test 400 Validation Error</button>
 </div>
+
+@if (validationErrors().length) {
+  <div class="card bg-base-100 flex mt-5 rounded-2xl w-1/2 mx-auto p-3">
+    <ul class="flex flex-col text-red-600 space-y-2">
+      @for (error of validationErrors(); track $index) {
+        <li>{{error}}</li>
+      }
+    </ul>
+  </div>
+}
