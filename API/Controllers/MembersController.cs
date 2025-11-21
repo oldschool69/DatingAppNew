@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,11 +37,9 @@ namespace API.Controllers
         [HttpPut]
         public async Task<ActionResult> UpdateMember(MemberUpdateDto memberUpdateDto)
         {
-            var memberId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var memberId = User.GetMemberId();
 
-            if (memberId == null) return BadRequest("Invalid user");
-
-            var member = await memberRepository.GetMemberByIdAsync(memberId);
+            var member = await memberRepository.GetMemberForUpdate(memberId);
 
             if (member == null) return BadRequest("Member not found");
 
@@ -48,6 +47,8 @@ namespace API.Controllers
             member.Description = memberUpdateDto.Description ?? member.Description;
             member.City = memberUpdateDto.City ?? member.City;
             member.Country = memberUpdateDto.Country ?? member.Country;
+
+            member.AppUser.DisplayName = memberUpdateDto.DisplayName ?? member.AppUser.DisplayName;
 
             if (await memberRepository.SaveAllAsync()) return NoContent();
 
