@@ -68,7 +68,7 @@ wwwroot/
 
 ## Secrets and configs (optional)
 appsettings.*.json
-!appsettings.Development.json
+appsettings.Development.json
 
 ## Docker
 *.dockerignore
