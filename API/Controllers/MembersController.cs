@@ -61,13 +61,13 @@ namespace API.Controllers
         {
             var memberId = User.GetMemberId();
             var member = await memberRepository.GetMemberForUpdate(memberId);
-            
+
             if (member == null) return BadRequest("Member not found");
-            
+
             var result = await photoService.UploadPhotoAsync(file);
-            
+
             if (result.Error != null) return BadRequest(result.Error.Message);
-            
+
             var photo = new Photo
             {
                 Url = result.SecureUrl.AbsoluteUri,
@@ -80,15 +80,34 @@ namespace API.Controllers
                 member.ImageUrl = photo.Url;
                 member.AppUser.ImageUrl = photo.Url;
             }
-            
+
             member.Photos.Add(photo);
-            
+
             if (await memberRepository.SaveAllAsync()) return photo;
-         
-            
+
+
             return BadRequest("Problem adding photo");
         }
+        
+        [HttpPut("set-main-photo/{photoId}")]
+        public async Task<ActionResult> SetMainPhoto(int photoId)
+        {
+            var memberId = User.GetMemberId();
+            var member = await memberRepository.GetMemberForUpdate(memberId);
 
+            if (member == null) return BadRequest("Member not found");
+
+            var photo = member.Photos.SingleOrDefault(p => p.Id == photoId);
+
+            if (member.ImageUrl == photo?.Url || photo == null) return BadRequest("Cannot set this as main photo");
+ 
+            member.ImageUrl = photo.Url;
+            member.AppUser.ImageUrl = photo.Url;
+
+            if (await memberRepository.SaveAllAsync()) return NoContent();
+
+            return BadRequest("Failed to set main photo");
+        }
     }
 }
 
