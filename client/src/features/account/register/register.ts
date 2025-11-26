@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, output } from '@angular/core';
-import { AbstractControl, Form, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Component, inject, output, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { RegisterCreds } from '../../../types/user';
 import { AccountService } from '../../../core/services/account-service';
 import { JsonPipe } from '@angular/common';
@@ -11,25 +11,32 @@ import { TextInput } from "../../../shared/text-input/text-input";
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
-export class Register implements OnInit {
+export class Register {
   private accountService = inject(AccountService);
+  private fb = inject(FormBuilder);
   cancelRegister = output<boolean>();
   protected creds = {} as RegisterCreds;
-  protected registerForm: FormGroup = new FormGroup({});
+  protected credentialsForm: FormGroup;
+  protected profileForm: FormGroup;
+  protected currentStep = signal(1);
 
-  ngOnInit(): void {
-    this.initializeForm();
-  }
-
-  initializeForm() {
-    this.registerForm = new FormGroup({
-      email: new FormControl('', [Validators.required, Validators.email]),
-      displayName: new FormControl('', Validators.required),
-      password: new FormControl('', [Validators.required, Validators.minLength(4), Validators.maxLength(8)]),
-      confirmPassword: new FormControl('', [Validators.required, this.matchValues('password')])
+  constructor() {
+    this.credentialsForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      displayName: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(8)]],
+      confirmPassword: ['', [Validators.required, this.matchValues('password')]]
     });
-    this.registerForm.controls['password'].valueChanges.subscribe(() => {
-      this.registerForm.controls['confirmPassword'].updateValueAndValidity();
+
+    this.profileForm = this.fb.group({
+      gender: ['', Validators.required],
+      dateOfBirth: ['', Validators.required],
+      city: ['', Validators.required],
+      country: ['', Validators.required],
+    });
+
+    this.credentialsForm.controls['password'].valueChanges.subscribe(() => {
+      this.credentialsForm.controls['confirmPassword'].updateValueAndValidity();
     });
   }
 
@@ -43,8 +50,32 @@ export class Register implements OnInit {
     }
   }
 
+  nextStep() {
+    if (this.credentialsForm.valid) {
+      this.currentStep.update(prevStep => prevStep + 1);
+    }
+  }
+
+  prevStep() {
+    this.currentStep.update(prevStep => prevStep - 1);
+  }
+
+  getMaxDate() {
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - 18);
+    return today.toISOString().split('T')[0];
+  }
+
   register() {
-    console.log('***DEBUG ', this.registerForm.value);
+    console.log('***DEBUG ', this.credentialsForm.value);
+    if (this.profileForm.valid && this.credentialsForm.valid) {
+      const formData = {
+        ...this.credentialsForm.value,
+        ...this.profileForm.value
+      }
+
+      console.log('***DEBUG Form Data: ', formData);
+    }
     // this.accountService.register(this.creds).subscribe({
     //   next: response => {
     //     console.log('Registration successful:', response);
