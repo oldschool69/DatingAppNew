@@ -2,13 +2,12 @@ import { Component, inject, output, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { RegisterCreds } from '../../../types/user';
 import { AccountService } from '../../../core/services/account-service';
-import { JsonPipe } from '@angular/common';
 import { TextInput } from "../../../shared/text-input/text-input";
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, JsonPipe, TextInput],
+  imports: [ReactiveFormsModule, TextInput],
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
@@ -70,7 +69,6 @@ export class Register {
   }
 
   register() {
-    console.log('***DEBUG ', this.credentialsForm.value);
     if (this.profileForm.valid && this.credentialsForm.valid) {
       const formData = {
         ...this.credentialsForm.value,
@@ -82,7 +80,6 @@ export class Register {
           this.router.navigateByUrl('/members');
         },
         error: (error: any) => {
-          console.log('***DEBUG error', error);
           this.validationErrors.set(error);
         }
       });
