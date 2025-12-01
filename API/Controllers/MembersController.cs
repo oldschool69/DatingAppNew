@@ -14,10 +14,11 @@ namespace API.Controllers
         IPhotoService photoService) : BaseApiController
     {
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers([FromQuery] PaginParams paginParams)
+        public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers([FromQuery] MemberParams memberParams)
         {
+            memberParams.CurrentMemberId = User.GetMemberId();
 
-            return Ok(await memberRepository.GetMembersAsync(paginParams));
+            return Ok(await memberRepository.GetMembersAsync(memberParams));
         }
 
         [HttpGet("{id}")]
