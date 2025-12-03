@@ -2,6 +2,7 @@ using System;
 using API.Data;
 using API.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Helpers;
 
@@ -18,7 +19,8 @@ public class LogUserActivity : IAsyncActionFilter
         var dbContext = resultContext.HttpContext.RequestServices
             .GetRequiredService<AppDbContext>();
 
-        
+        await dbContext.Members.Where(m => m.Id == memberId)
+            .ExecuteUpdateAsync(m => m.SetProperty(u => u.LastActive, DateTime.UtcNow));
 
     }
 }
