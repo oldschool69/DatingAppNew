@@ -19,6 +19,14 @@ export class MemberList implements OnInit {
   protected memberParams = new MemberParams();
   protected updatedParams = new MemberParams();
 
+  constructor() {
+    const filters = localStorage.getItem('filters');
+    if (filters) {
+      this.memberParams = JSON.parse(filters);
+      this.updatedParams = { ...this.memberParams };
+    }
+  }
+
   ngOnInit(): void {
     this.loadMembers();
   }
@@ -41,7 +49,7 @@ export class MemberList implements OnInit {
 
   onClose() {
     console.log('Modal closed');
-  } 
+  }
 
   onFilterChange(data: MemberParams) {
     this.memberParams = {...data};
@@ -68,11 +76,11 @@ export class MemberList implements OnInit {
       filters.push(`aged between ${this.updatedParams.minAge} and ${this.updatedParams.maxAge}`);
     }
 
-    filters.push(this.updatedParams.orderBy === 'lastActive' 
+    filters.push(this.updatedParams.orderBy === 'lastActive'
       ? 'Recently active' : 'Newest members');
 
     return filters.length > 0 ? 'Selected ' + filters.join('  | ') : 'All members';
-    
+
   }
 
 }

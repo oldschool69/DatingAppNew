@@ -14,6 +14,13 @@ export class FilterModal {
   submitData =  output<MemberParams>();
   memberParams = new MemberParams();
 
+  constructor() {
+    const filters = localStorage.getItem('filters');
+    if (filters) {
+      this.memberParams = JSON.parse(filters);
+    }
+  }
+
   open() {
     this.modalRef.nativeElement.showModal();
   }
@@ -29,12 +36,12 @@ export class FilterModal {
   }
 
   onMinAgeChange() {
-    if (this.memberParams.minAge < 18) this.memberParams.minAge = 18; 
+    if (this.memberParams.minAge < 18) this.memberParams.minAge = 18;
   }
 
   onMaxAgeChange() {
     if (this.memberParams.maxAge < this.memberParams.minAge) {
       this.memberParams.maxAge = this.memberParams.minAge;
-    } 
+    }
   }
 }

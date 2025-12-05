@@ -34,4 +34,5 @@ public class Member
     [JsonIgnore]
     [ForeignKey(nameof(Id))]
     public AppUser AppUser { get; set; } = null!;
+    
 }
