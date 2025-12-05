@@ -8,39 +8,39 @@
                 <span class="font-semibold">Select gender:</span>
                 <form class="filter">
                     <input type="reset" value="X" class="btn btn-square">
-                    <input type="radio" class="btn" [(ngModel)]="memberParams.gender"
+                    <input type="radio" class="btn" [(ngModel)]="memberParams().gender"
                         name="gender" value="male" aria-label="Male">
-                    <input type="radio" class="btn" [(ngModel)]="memberParams.gender"
+                    <input type="radio" class="btn" [(ngModel)]="memberParams().gender"
                         name="gender" value="female" aria-label="Female">
                 </form>
             </label>
             <label class="flex justify-between items-center">
                 <span class="font-semibold">Select age</span>
                 <div class="flex gap-3">
-                    <input 
-                        type="number" 
-                        [min]="18" 
-                        [(ngModel)]="memberParams.minAge"
+                    <input
+                        type="number"
+                        [min]="18"
+                        [(ngModel)]="memberParams().minAge"
                         name="minAge"
                         class="input w-20"
-                        (change)="onMinAgeChange()" 
+                        (change)="onMinAgeChange()"
                         />
-                    <input 
-                        type="number" 
-                        [min]="memberParams.minAge || 18" 
-                        [(ngModel)]="memberParams.maxAge"
+                    <input
+                        type="number"
+                        [min]="memberParams().minAge || 18"
+                        [(ngModel)]="memberParams().maxAge"
                         name="maxAge"
                         class="input w-20"
-                        (change)="onMaxAgeChange()" 
+                        (change)="onMaxAgeChange()"
                         />
 
                 </div>
             </label>
             <label class="flex justify-between items-center">
                 <span class="font-semibold">Order by:</span>
-                <select 
+                <select
                     class="select"
-                    [(ngModel)]="memberParams.orderBy"
+                    [(ngModel)]="memberParams().orderBy"
                     name="orderBy"
                     >
                     <option disabled value="">Order by</option>
@@ -50,7 +50,7 @@
             </label>
         </div>
     </div>
-    
+
     <div class="modal-action">
         <button (click)="submit()" class="btn btn-primary">Close</button>
     </div>
