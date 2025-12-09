@@ -13,9 +13,26 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Photo> Photos { get; set; }
 
+    public DbSet<MemberLike> Likes { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<MemberLike>()
+            .HasKey(ml => new { ml.SourceMemberId, ml.TargetMemberId });
+
+        modelBuilder.Entity<MemberLike>()
+            .HasOne(ml => ml.SourceMember)
+            .WithMany(m => m.LikedMembers)
+            .HasForeignKey(ml => ml.SourceMemberId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MemberLike>()
+            .HasOne(ml => ml.TargetMember)
+            .WithMany(m => m.LikedByMembers)
+            .HasForeignKey(ml => ml.TargetMemberId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
             v => v.ToUniversalTime(),
