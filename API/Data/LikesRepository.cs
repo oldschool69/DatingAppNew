@@ -54,7 +54,7 @@ namespace API.Data
 
                     return await query
                         .Where(ml => ml.TargetMemberId == memberId 
-                            && likeIds.Contains(ml.TargetMemberId))
+                            && likeIds.Contains(ml.SourceMemberId))
                         .Select(ml => ml.SourceMember)
                         .ToListAsync();
             }
