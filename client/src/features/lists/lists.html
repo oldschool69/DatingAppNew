@@ -6,12 +6,24 @@
     }
 </div>
 
-@if (members().length > 0) {
-<div class="grid grid-cols-5 gap-6">
-    @for(member of members(); track member.id) {
-    <div>
-        <app-member-card [member]="member"></app-member-card>
+@if(paginatedMembers(); as paginatedResult) {
+    @if(paginatedResult.metadata; as metadata) {
+        <app-paginator
+        [pageNumber]="metadata.currentPage"
+        [pageSize]="metadata.pageSize"
+        [totalCount]="metadata.totalCount"
+        [totalPages]="metadata.totalPages"
+        (pageChange)="onPageChange($event)"
+        ></app-paginator>
+    }
+       
+    @if (members().length > 0) {
+    <div class="grid grid-cols-5 gap-6">
+        @for(member of members(); track member.id) {
+        <div>
+            <app-member-card [member]="member"></app-member-card>
+        </div>
+        }
     </div>
     }
-</div>
 }
