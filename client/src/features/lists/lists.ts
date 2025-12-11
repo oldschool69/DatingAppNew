@@ -14,7 +14,7 @@ import { Paginator } from "../../shared/paginator/paginator";
 export class Lists implements OnInit {
   private likesService = inject(LikesService);
   protected members = signal<Member[]>([]);
-  protected predicate = 'liked';
+  //protected predicate = 'liked';
   protected paginatedMembers = signal<PaginatedResult<Member> | null>(null);
   protected likedParams = new LikedParams();
   protected updatedLikedParams = new LikedParams();
@@ -27,7 +27,7 @@ export class Lists implements OnInit {
   ];
 
   constructor() {
-    this.likedParams.predicate = this.predicate;
+    this.likedParams.predicate = 'liked';
   }
 
   ngOnInit(): void {
@@ -35,8 +35,7 @@ export class Lists implements OnInit {
   }
 
   setPredicate(predicate: string): void {
-    if (this.predicate === predicate) return;
-    this.predicate = predicate;
+    if (this.likedParams.predicate === predicate) return;
     this.likedParams.predicate = predicate;
     this.loadLikes();
   }
