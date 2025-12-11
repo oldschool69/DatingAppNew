@@ -34,4 +34,10 @@ export class MemberParams {
   orderBy = 'lastActive';
 }
 
+export class LikedParams {
+  pageNumber = 1;
+  pageSize = 5;
+  predicate!: string;
+}
+
 

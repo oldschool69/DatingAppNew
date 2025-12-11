@@ -16,10 +16,10 @@
         (pageChange)="onPageChange($event)"
         ></app-paginator>
     }
-       
-    @if (members().length > 0) {
+
+    @if (paginatedResult.items; as members) {
     <div class="grid grid-cols-5 gap-6">
-        @for(member of members(); track member.id) {
+        @for(member of members; track member.id) {
         <div>
             <app-member-card [member]="member"></app-member-card>
         </div>
