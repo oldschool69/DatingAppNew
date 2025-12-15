@@ -7,6 +7,7 @@ using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Data
 {
@@ -44,9 +45,22 @@ namespace API.Data
             return await PaginationHelper.CreateAsync(messageQuery, messageParams.PageNumber, messageParams.PageSize);
         }
 
-        public Task<IReadOnlyList<MessageDto>> GetMessageThread(string currentMemberId, string recipientMemberId)
+        public async Task<IReadOnlyList<MessageDto>> GetMessageThread(string currentMemberId, string recipientMemberId)
         {
-            throw new NotImplementedException();
+            await context.Messages
+                .Where(m =>
+                       m.RecipientId == currentMemberId 
+                        && m.SenderId == recipientMemberId && 
+                        m.DateRead == null)
+                .ExecuteUpdateAsync(m => m.SetProperty(msg => msg.DateRead, DateTime.UtcNow));
+
+            return await context.Messages
+                .Where(m =>
+                       (m.RecipientId == currentMemberId && m.SenderId == recipientMemberId) ||
+                       (m.RecipientId == recipientMemberId && m.SenderId == currentMemberId))
+                .OrderBy(m => m.MessageSent)
+                .Select(MessageExtensions.ToDtoProjection)
+                .ToListAsync();
         }
 
         public async Task<bool> SaveAllAsyncChanges()
