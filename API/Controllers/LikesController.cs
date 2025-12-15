@@ -47,7 +47,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<Member>>> GetMemberLikes([FromQuery] LikedParams likedParams)
+        public async Task<ActionResult<PaginatedResult<Member>>> GetMemberLikes([FromQuery] LikedParams likedParams)
         {
             likedParams.CurrentMemberId = User.GetMemberId();
             var memberLikes = await likesRepository.GetMemberLikes(likedParams);
