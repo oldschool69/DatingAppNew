@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 
@@ -26,9 +27,21 @@ namespace API.Data
             return await context.Messages.FindAsync(messageId);
         }
 
-        public Task<PaginatedResult<MessageDto>> GetMessagesForMember()
+        public async Task<PaginatedResult<MessageDto>> GetMessagesForMember(MessageParams messageParams)
         {
-            throw new NotImplementedException();
+            var query = context.Messages
+                .OrderByDescending(m => m.MessageSent)
+                .AsQueryable();
+
+            query = messageParams.Container.ToLower() switch
+            {
+                "outbox" => query.Where(m => m.SenderId == messageParams.MemberId),
+                _ => query.Where(m => m.RecipientId == messageParams.MemberId)
+            };
+
+            var messageQuery = query.Select(MessageExtensions.ToDtoProjection);
+
+            return await PaginationHelper.CreateAsync(messageQuery, messageParams.PageNumber, messageParams.PageSize);
         }
 
         public Task<IReadOnlyList<MessageDto>> GetMessageThread(string currentMemberId, string recipientMemberId)
