@@ -45,7 +45,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
             return ValidationProblem();
         }
 
-        return user.ToUserDto(tokenService);
+        return await user.ToUserDto(tokenService);
     }
 
     [HttpPost("login")]
@@ -64,6 +64,6 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
             return Unauthorized("Invalid password");
         }
 
-        return user.ToUserDto(tokenService);
+        return await user.ToUserDto(tokenService);
     }
 }
