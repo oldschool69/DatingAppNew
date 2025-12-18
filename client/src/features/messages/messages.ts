@@ -47,10 +47,23 @@ export class Messages {
     this.loadMessages();
   }
 
-    onPageChange(event: { pageNumber: number; pageSize: number }){
+  onPageChange(event: { pageNumber: number; pageSize: number }){
     this.pageNumber = event.pageNumber;
     this.pageSize = event.pageSize;
     this.loadMessages();
+  }
+
+  deleteMessage(event: Event, messageId: string) {
+    event.stopPropagation();
+    this.messageService.deleteMessage(messageId).subscribe(() => {
+      const currentMessages = this.paginatedMessages()?.items;
+      if (currentMessages) {
+        this.paginatedMessages.set({
+          ...this.paginatedMessages(),
+          items: currentMessages.filter(m => m.id !== messageId)
+        } as PaginatedResult<Message>);
+      }
+    });
   }
 
 }
