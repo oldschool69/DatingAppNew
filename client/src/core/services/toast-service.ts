@@ -5,18 +5,18 @@ import { Injectable } from '@angular/core';
 })
 export class ToastService {
 
-  constructor() { 
+  constructor() {
     this.createToastContainer();
   }
 
   private createToastContainer()  {
-    
+
     let container = document.getElementById('toast-container');
-    
+
     if (!container) {
       container = document.createElement('div');
       container.id = 'toast-container';
-      container.className = 'toast toast-bottom toast-end';
+      container.className = 'toast toast-bottom toast-end z-50';
       document.body.appendChild(container);
     }
   }
@@ -40,12 +40,12 @@ export class ToastService {
     setTimeout(() => {
       if (toastContainer.contains(toast)) {
         toastContainer.removeChild(toast);
-      } 
+      }
     }, duration);
   }
 
   sucess(message: string, duration?: number) {
-    this.createToastElement(message, 'alert-success', duration);  
+    this.createToastElement(message, 'alert-success', duration);
   }
 
   error(message: string, duration?: number) {
@@ -59,5 +59,5 @@ export class ToastService {
   info(message: string, duration?: number) {
     this.createToastElement(message, 'alert-info', duration);
   }
-  
+
 }
