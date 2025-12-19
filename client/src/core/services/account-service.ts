@@ -17,7 +17,8 @@ export class AccountService {
   private baseUrl = environment.apiUrl;
 
   register(creds: RegisterCreds) {
-    return this.http.post<User>(this.baseUrl + 'account/register', creds).pipe(
+    return this.http.post<User>(this.baseUrl + 'account/register', creds,
+      { withCredentials: true }).pipe(
       tap(user => {
         if (user) {
           this.setCurrentUser(user);
@@ -27,25 +28,48 @@ export class AccountService {
   }
 
   login(creds: LoginCreds) {
-    return this.http.post<User>(this.baseUrl + 'account/login', creds).pipe(
+    return this.http.post<User>(this.baseUrl + 'account/login', creds,
+      { withCredentials: true }).pipe(
       tap(user => {
         if (user) {
           this.setCurrentUser(user);
+          this.startTokenRefreshInterval();
         }
       })
     );
   }
 
+  refreshToken() {
+    return this.http.post<User>(this.baseUrl + 'account/refresh-token', {},
+      { withCredentials: true }).pipe(
+      tap(user => {
+        if (user) {
+          this.setCurrentUser(user);
+          this.startTokenRefreshInterval();
+        }
+      })
+    );
+  }
+
+  startTokenRefreshInterval() {
+    setInterval(() => {
+      this.refreshToken().subscribe({
+        next: () => console.log('Token refreshed'),
+        error: () => {
+          console.log('Failed to refresh token');
+          this.logout();
+        }
+      });
+    }, 5 * 60 * 1000);
+  }
+
   logout() {
-    localStorage.removeItem('user');
-    localStorage.removeItem('filters');
     this.likesService.clearLikeIds();
     this.currentUser.set(null);
   }
 
   setCurrentUser(user: User) {
     user.roles = this.getRolesFromToken(user);
-    localStorage.setItem('user', JSON.stringify(user));
     this.currentUser.set(user);
     this.likesService.getLikeIds();
   }

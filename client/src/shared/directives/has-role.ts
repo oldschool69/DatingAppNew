@@ -13,7 +13,7 @@ export class HasRole implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    if (this.accountService.currentUser()?.roles.some(r => this.appHasRole.includes(r))) {
+    if (this.accountService.currentUser()?.roles?.some(r => this.appHasRole.includes(r))) {
       this.viewContainer.createEmbeddedView(this.templateRef);
     } else {
       this.viewContainer.clear();
