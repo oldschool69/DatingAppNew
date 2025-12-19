@@ -34,7 +34,9 @@
       @for (role of availableRoles; track $index) {
         <div class="form-control">
           <label class="cursor-pointer label">
-            <input type="checkbox"
+            <input
+                   (change)="toggleRole($event, role)"
+                   type="checkbox"
                    class="checkbox checkbox-primary mr-2"
                    [checked]="selectedUser?.roles?.includes(role)"
                    [disabled]="selectedUser?.email === 'admin@test.com' && role === 'Admin'"

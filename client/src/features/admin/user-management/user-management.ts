@@ -41,11 +41,15 @@ export class UserManagement implements OnInit {
       const roles = this.selectedUser.roles;
       this.adminService.updateUserRoles(this.selectedUser.id, roles).subscribe({
         next: updatedRoles => {
-          if (this.selectedUser) {
-            this.selectedUser.roles = updatedRoles;
-          }
+          this.users.update(users => users.map(u => {
+            if (u.id === this.selectedUser!.id) {
+              return { ...u, roles: updatedRoles };
+            }
+            return u;
+          }));
           this.closeRolesModal();
-        }
+        },
+        error: err => console.log('Failed to update roles', err)
       });
     }
   }
@@ -60,6 +64,18 @@ export class UserManagement implements OnInit {
         this.users.set(users);
       }
     });
+  }
+
+  toggleRole(event: Event, role: string) {
+    if (!this.selectedUser) return;
+    const isChecked = (event.target as HTMLInputElement).checked;
+    if (isChecked) {
+      if (!this.selectedUser.roles.includes(role)) {
+        this.selectedUser.roles.push(role);
+      }
+    } else {
+      this.selectedUser.roles = this.selectedUser.roles.filter(r => r !== role);
+    }
   }
 
 }
