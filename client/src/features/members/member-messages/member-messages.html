@@ -4,10 +4,14 @@
         <div class="chat"
             [class.chat-start]="!message.currentUserSender"
             [class.chat-end]="message.currentUserSender">
-            <div class="chat-image avatar">
+            <div
+              class="chat-image avatar"
+              [class.avatar-online]="presenceService.onlineUsers()
+                .includes(message.senderId || message.recipientId)"
+            >
                 <div class="w-10 rounded-full">
                     <img alt="image of user"
-                        [src]="message.senderImageUrl" />
+                        [src]="message.senderImageUrl || '/user.png'" />
                 </div>
             </div>
             <div class="chat-header">
@@ -27,7 +31,7 @@
                <div class="chat-footer opacity-50">
                     Delivered
                 </div>
- 
+
             }
         </div>
         }
