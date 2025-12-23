@@ -69,6 +69,7 @@ export class AccountService {
   logout() {
     this.likesService.clearLikeIds();
     this.currentUser.set(null);
+    this.presenceService.stopHubConnection();
   }
 
   setCurrentUser(user: User) {
