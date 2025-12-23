@@ -1,4 +1,4 @@
-import { Component, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { MessageService } from '../../../core/services/message-service';
 import { MemberService } from '../../../core/services/member-service';
 import { Message } from '../../../types/message';
@@ -14,7 +14,7 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './member-messages.html',
   styleUrl: './member-messages.css'
 })
-export class MemberMessages implements OnInit {
+export class MemberMessages implements OnInit, OnDestroy {
   @ViewChild('messageEndRef') messageEndRef!: ElementRef;
   protected messageService = inject(MessageService);
   private memberService = inject(MemberService);
@@ -37,6 +37,10 @@ export class MemberMessages implements OnInit {
       if (!otherUserId) throw new Error('Cannot connect to hub');
       this.messageService.createHubConnection(otherUserId);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.messageService.stopHubConnection();
   }
 
   sendMessage() {

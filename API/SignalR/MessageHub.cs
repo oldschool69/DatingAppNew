@@ -26,6 +26,8 @@ namespace API.SignalR
             
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
+            await AddToGroup(groupName);
+
             var messages = await messageRepository.GetMessageThread(GetUserId(), otherUser);
 
             await Clients.Group(groupName).SendAsync("ReceiveMessageThread", messages);
@@ -34,13 +36,14 @@ namespace API.SignalR
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var httpContext = Context.GetHttpContext();
-            var otherUser = httpContext?.Request?.Query["userId"].ToString()
-                ?? throw new HubException("Other user not found ");
+            // var httpContext = Context.GetHttpContext();
+            // var otherUser = httpContext?.Request?.Query["userId"].ToString()
+            //     ?? throw new HubException("Other user not found ");
 
-            var groupName = GetGroupName(GetUserId(), otherUser);
+            // var groupName = GetGroupName(GetUserId(), otherUser);
             
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            // await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            await messageRepository.RemoveConnection(Context.ConnectionId);
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -61,13 +64,36 @@ namespace API.SignalR
                 Content = createMessageDto.Content
             };
 
+            var groupName = GetGroupName(sender.Id, recipient.Id);
+            var group = await messageRepository.GetMessageGroup(groupName);
+            
+            if (group != null && group.Connections.Any(c => c.UserId == message.RecipientId))
+            {
+                message.DateRead = DateTime.UtcNow;
+            }
+
             messageRepository.AddMessage(message);
 
             if (await messageRepository.SaveAllAsyncChanges())
             {
-                var groupName = GetGroupName(sender.Id, recipient.Id);
                 await Clients.Group(groupName).SendAsync("NewMessage", message.ToDto());
             }
+        }
+
+        private async Task<bool> AddToGroup(string groupName)
+        {
+            var group = await messageRepository.GetMessageGroup(groupName);
+            var connection = new Connection(Context.ConnectionId, GetUserId());
+
+            if (group == null)
+            {
+                group = new Group(groupName);
+                messageRepository.AddGroup(group);
+            }
+
+            group.Connections.Add(connection);
+
+            return await messageRepository.SaveAllAsyncChanges();
         }
 
         private static string GetGroupName(string? caller, string? other)
