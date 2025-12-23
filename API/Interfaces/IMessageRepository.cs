@@ -18,8 +18,19 @@ namespace API.Interfaces
 
         Task<PaginatedResult<MessageDto>> GetMessagesForMember(MessageParams messageParams);
 
-         Task<IReadOnlyList<MessageDto>> GetMessageThread(string currentMemberId, string recipientMemberId);
+        Task<IReadOnlyList<MessageDto>> GetMessageThread(string currentMemberId, string recipientMemberId);
 
-         Task<bool> SaveAllAsyncChanges();
+        Task<bool> SaveAllAsyncChanges();
+
+        void AddGroup(Group group);
+
+        Task RemoveConnection(string connectionId);
+
+        Task<Connection?> GetConnection(string connectionId);
+
+        Task<Group?> GetGroupForConnection(string connectionId);
+
+        Task<Group?> GetMessageGroup(string groupName);
+
     }
 }
