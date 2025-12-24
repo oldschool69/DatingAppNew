@@ -8,13 +8,11 @@ using API.Extensions;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Primitives;
 
 namespace API.SignalR
 {
     [Authorize]
-    public class MessageHub(IMessageRepository messageRepository, 
-        IMemberRepository memberRepository, IHubContext<PresenceHub> presenceHub) : Hub
+    public class MessageHub(IUnitOfWork uow, IHubContext<PresenceHub> presenceHub) : Hub
     {
 
         override public async Task OnConnectedAsync()
@@ -29,7 +27,7 @@ namespace API.SignalR
 
             await AddToGroup(groupName);
 
-            var messages = await messageRepository.GetMessageThread(GetUserId(), otherUser);
+            var messages = await uow.MessageRepository.GetMessageThread(GetUserId(), otherUser);
 
             await Clients.Group(groupName).SendAsync("ReceiveMessageThread", messages);
 
@@ -37,14 +35,7 @@ namespace API.SignalR
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            // var httpContext = Context.GetHttpContext();
-            // var otherUser = httpContext?.Request?.Query["userId"].ToString()
-            //     ?? throw new HubException("Other user not found ");
-
-            // var groupName = GetGroupName(GetUserId(), otherUser);
-            
-            // await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-            await messageRepository.RemoveConnection(Context.ConnectionId);
+            await uow.MessageRepository.RemoveConnection(Context.ConnectionId);
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -52,9 +43,8 @@ namespace API.SignalR
         public async Task SendMessage(CreateMessageDto createMessageDto)
         {
             var userId = GetUserId();
-            var sender = await memberRepository.GetMemberByIdAsync(userId);
-            var recipient = await memberRepository.GetMemberByIdAsync(createMessageDto.RecipientId);
-
+            var sender = await uow.MemberRepository.GetMemberByIdAsync(userId);
+            var recipient = await uow.MemberRepository.GetMemberByIdAsync(createMessageDto.RecipientId);
             if (recipient == null || sender == null || recipient.Id == sender.Id) 
                 throw new HubException("Cannot send this message");
 
@@ -66,7 +56,7 @@ namespace API.SignalR
             };
 
             var groupName = GetGroupName(sender.Id, recipient.Id);
-            var group = await messageRepository.GetMessageGroup(groupName);
+            var group = await uow.MessageRepository.GetMessageGroup(groupName);
             var isUserOnGroup = group != null && group.Connections.Any(c => c.UserId == message.RecipientId);
             
             if (isUserOnGroup)
@@ -74,9 +64,8 @@ namespace API.SignalR
                 message.DateRead = DateTime.UtcNow;
             }
 
-            messageRepository.AddMessage(message);
-
-            if (await messageRepository.SaveAllAsyncChanges())
+            uow.MessageRepository.AddMessage(message);
+            if (await uow.Complete())
             {
                 await Clients.Group(groupName).SendAsync("NewMessage", message.ToDto());
                 var connections = await PresenceTracker.GetConnectionsForUser(recipient.Id);
@@ -90,18 +79,18 @@ namespace API.SignalR
 
         private async Task<bool> AddToGroup(string groupName)
         {
-            var group = await messageRepository.GetMessageGroup(groupName);
+            var group = await uow.MessageRepository.GetMessageGroup(groupName);
             var connection = new Connection(Context.ConnectionId, GetUserId());
 
             if (group == null)
             {
                 group = new Group(groupName);
-                messageRepository.AddGroup(group);
+                uow.MessageRepository.AddGroup(group);
             }
 
             group.Connections.Add(connection);
 
-            return await messageRepository.SaveAllAsyncChanges();
+            return await uow.Complete();
         }
 
         private static string GetGroupName(string? caller, string? other)

@@ -64,10 +64,5 @@ namespace API.Data
             return await PaginationHelper.CreateAsync(membersQuery,
                 likedParams.PageNumber, likedParams.PageSize);
         }
-
-        public async Task<bool> SaveAllChanges()
-        {
-            return await context.SaveChangesAsync() > 0;
-        }
     }
 }

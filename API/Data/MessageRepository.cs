@@ -100,10 +100,5 @@ namespace API.Data
                 .Where(c => c.ConnectionId == connectionId)
                 .ExecuteDeleteAsync();
         }
-
-        public async Task<bool> SaveAllAsyncChanges()
-        {
-            return await context.SaveChangesAsync() > 0;
-        }
     }
 }

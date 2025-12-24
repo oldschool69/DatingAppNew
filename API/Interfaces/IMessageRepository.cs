@@ -20,8 +20,6 @@ namespace API.Interfaces
 
         Task<IReadOnlyList<MessageDto>> GetMessageThread(string currentMemberId, string recipientMemberId);
 
-        Task<bool> SaveAllAsyncChanges();
-
         void AddGroup(Group group);
 
         Task RemoveConnection(string connectionId);

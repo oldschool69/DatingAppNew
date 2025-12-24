@@ -11,15 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    public class MessagesController(IMessageRepository messageRepository
-    , IMemberRepository memberRepository) : BaseApiController
+    public class MessagesController(IUnitOfWork uow) : BaseApiController
     {
         [HttpPost]
         public async Task<ActionResult> CreateMessage(CreateMessageDto createMessageDto)
         {
             var userId = User.GetMemberId();
-            var sender = await memberRepository.GetMemberByIdAsync(userId);
-            var recipient = await memberRepository.GetMemberByIdAsync(createMessageDto.RecipientId);
+            var sender = await uow.MemberRepository.GetMemberByIdAsync(userId);
+            var recipient = await uow.MemberRepository.GetMemberByIdAsync(createMessageDto.RecipientId);
 
             if (recipient == null || sender == null || recipient.Id == sender.Id) 
                 return BadRequest("Cannot send this message");
@@ -31,9 +30,9 @@ namespace API.Controllers
                 Content = createMessageDto.Content
             };
 
-            messageRepository.AddMessage(message);
+            uow.MessageRepository.AddMessage(message);
 
-            if (await messageRepository.SaveAllAsyncChanges()) return Ok(message.ToDto());
+            if (await uow.Complete()) return Ok(message.ToDto());
             
             return BadRequest("Failed to send message");
         }
@@ -44,7 +43,7 @@ namespace API.Controllers
             var userId = User.GetMemberId();
             messageParams.MemberId = userId;
 
-            var messages = await messageRepository.GetMessagesForMember(messageParams);
+            var messages = await uow.MessageRepository.GetMessagesForMember(messageParams);
 
             return Ok(messages);
         }
@@ -54,7 +53,7 @@ namespace API.Controllers
         {
             var currentMemberId = User.GetMemberId();
 
-            var messages = await messageRepository.GetMessageThread(currentMemberId, recipientMemberId);
+            var messages = await uow.MessageRepository.GetMessageThread(currentMemberId, recipientMemberId);
 
             return Ok(messages);
         }
@@ -64,7 +63,7 @@ namespace API.Controllers
         {
             var memberId = User.GetMemberId();
 
-            var message = await messageRepository.GetMessage(messageId);
+            var message = await uow.MessageRepository.GetMessage(messageId);
 
             if (message == null) return BadRequest("Message not found");
 
@@ -75,9 +74,9 @@ namespace API.Controllers
             if (message.RecipientId == memberId) message.RecipientDeleted = true;
 
             if (message is {SenderDeleted: true, RecipientDeleted: true})
-                messageRepository.DeleteMessage(message);
+                uow.MessageRepository.DeleteMessage(message);
 
-            if (await messageRepository.SaveAllAsyncChanges()) return Ok();
+            if (await uow.Complete()) return Ok();
 
             return BadRequest("Problem deleting the message");
         }

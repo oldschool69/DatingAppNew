@@ -18,6 +18,5 @@ namespace API.Interfaces
 
         void AddLike(MemberLike like);
 
-        Task<bool> SaveAllChanges();
     }
 }
