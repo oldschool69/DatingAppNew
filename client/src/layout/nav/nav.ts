@@ -24,6 +24,7 @@ export class Nav implements OnInit {
   protected selectedTheme = signal<string>(localStorage.getItem('theme') || 'light');
   protected themes = themes;
   protected busyService = inject(BusyService);
+  protected loading = signal(false);
 
   ngOnInit(): void {
     document.documentElement.setAttribute('data-theme', this.selectedTheme());
@@ -38,15 +39,18 @@ export class Nav implements OnInit {
   }
 
   async login(){
-    try {
-      await firstValueFrom(this.accountService.login(this.creds));
-      this.router.navigateByUrl('/members');
-      this.toast.sucess('Login successful');
-      this.creds = {};
-    } catch (error: any) {
-      console.log('***DEBUG error ',error);
-      this.toast.error('Login failed: ' + error.error);
-    }
+    this.loading.set(true);
+      this.accountService.login(this.creds).subscribe({
+        next: () => {
+          this.router.navigateByUrl('/members');
+          this.toast.sucess('Login successful');
+          this.creds = {};
+        },
+        error: (error) => {
+          this.toast.error('Login failed: ' + error.error);
+        },
+        complete: () => this.loading.set(false)
+      });
   }
 
   logout(){
